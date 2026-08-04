@@ -40,10 +40,35 @@ def _month_bounds(year_month: str):
 
 # ---- Auth ----
 
+@router.get("/setup", response_class=HTMLResponse)
+def setup_page(request: Request):
+    """First-run admin creation - only reachable while the admins table is
+    empty (e.g. right after a fresh deploy, or on a host like Render's free
+    tier where the disk resets on every deploy/restart). Once any admin
+    exists this always redirects to login, so it's safe to leave deployed
+    permanently rather than needing a token or manual removal."""
+    if store.any_admin_exists():
+        return RedirectResponse("/admin/login", status_code=303)
+    return render(request, "setup.html", error=None)
+
+
+@router.post("/setup")
+def setup_submit(request: Request, username: str = Form(...), password: str = Form(...)):
+    if store.any_admin_exists():
+        return RedirectResponse("/admin/login", status_code=303)
+    if len(password) < 8:
+        return render(request, "setup.html", error="Password must be at least 8 characters.")
+
+    store.create_admin(username, hash_password(password))
+    return RedirectResponse("/admin/login", status_code=303)
+
+
 @router.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
     if try_get_current_admin(request):
         return RedirectResponse("/admin", status_code=303)
+    if not store.any_admin_exists():
+        return RedirectResponse("/admin/setup", status_code=303)
     return render(request, "login.html", error=None)
 
 
