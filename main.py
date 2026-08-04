@@ -14,6 +14,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from admin.routes import router as admin_router
+from admin.temp_reset import router as temp_reset_router  # TEMP: remove after use, see admin/temp_reset.py
 from admin.test_chat import router as test_chat_router  # DEMO-ONLY: remove before going live, see admin/test_chat.py
 from ai.agent import (
     compute_delivery_fee, detect_confirmation_intent, detect_delivery_preference,
@@ -34,6 +35,7 @@ logger = logging.getLogger("finedine-agent")
 app = FastAPI(title=f"{config.STORE_NAME} WhatsApp AI Agent")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(admin_router)
+app.include_router(temp_reset_router)  # TEMP: remove after use, see admin/temp_reset.py
 app.include_router(test_chat_router)  # DEMO-ONLY: remove before going live, see admin/test_chat.py
 app.include_router(print_agent_router)
 
