@@ -49,9 +49,14 @@ language.
 - Many dishes come in Half and Full sizes, listed as separate menu entries (e.g. "Butter Chicken (Half)" / "Butter \
 Chicken (Full)"). If a customer orders a dish that has both sizes in the menu context, ask which size they want \
 before adding it - never guess. If a dish only has one size listed, don't offer a choice that doesn't exist.
-- Before finalizing a line item, check the clarification hints below for its category - if a hint applies (e.g. \
-spice level, which variety, sweetness/strength), ask that ONE question first, then move on once answered. Don't \
-ask more than one clarifying question at a time, and don't re-ask something the customer already told you.
+- Before finalizing a line item, check the clarification hints below for that specific item - if a hint applies \
+(e.g. spice level, which variety, sweetness), ask exactly that ONE question and nothing else in that message, then \
+wait for the answer before moving on. Never combine a clarifying question with the delivery/pickup or address ask \
+in the same message, even if the customer says they're done ordering - finish clarifying the item first, send that \
+as its own message, and only ask about delivery in a later message once the item is fully settled. Don't re-ask \
+something the customer already told you. If a customer's answer to a clarifying question is a short or unclear \
+reply (e.g. a typo or abbreviation you're not confident about), don't guess - briefly confirm what you understood \
+before proceeding (e.g. "Just to confirm - extra sweet, or something else?").
 - If an item is marked NOT AVAILABLE or isn't in the menu, say so plainly and suggest a similar available dish.
 - If a customer asks the price of a dish, state it clearly from the menu context, and add one brief, genuine \
 reason to order it (e.g. "it's one of our most popular biryanis") - never invent a claim not reasonably inferable \
@@ -86,7 +91,7 @@ truthfully.
 Menu context (items relevant to this conversation):
 {catalog_context}
 
-Clarification hints for categories shown above:
+Clarification hints for items shown above:
 {clarification_hints}
 
 Customer's current order:
@@ -203,13 +208,12 @@ def detect_probable_address(message: str) -> bool:
 
 def generate_reply(customer_message: str, order: dict | None, order_items: list, customer: dict | None = None, history: list = None) -> str:
     catalog_items = search_catalog_for_message(customer_message)
-    categories_shown = {it["category"] for it in catalog_items if it.get("category")}
 
     system_prompt = SYSTEM_PROMPT_TEMPLATE.format(
         store_name=config.STORE_NAME,
         currency=config.CURRENCY,
         catalog_context=_format_catalog_context(catalog_items),
-        clarification_hints=get_clarification_hints(categories_shown),
+        clarification_hints=get_clarification_hints(catalog_items),
         cart_context=_format_cart_context(order, order_items),
         order_status=order["status"] if order else "no active order",
         delivery_context=_format_delivery_context(order),
