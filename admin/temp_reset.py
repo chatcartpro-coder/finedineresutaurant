@@ -26,11 +26,13 @@ def reset_password(token: str = Form(...), username: str = Form(...), new_passwo
     if not expected or token != expected:
         return PlainTextResponse("Not found", status_code=404)
 
-    admin = store.get_admin_by_username(username)
-    if not admin:
-        return PlainTextResponse(f"No admin '{username}'", status_code=404)
     if len(new_password) < 8:
         return PlainTextResponse("Password must be at least 8 characters.", status_code=400)
+
+    admin = store.get_admin_by_username(username)
+    if not admin:
+        store.create_admin(username, hash_password(new_password))
+        return PlainTextResponse(f"Admin '{username}' created.")
 
     store.set_admin_password(admin["id"], hash_password(new_password))
     return PlainTextResponse(f"Password reset for '{username}'.")
