@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Menu</h1>
+    <p>Menu items the WhatsApp AI grounds every reply in.{% if last_synced %} Last synced {{ last_synced[:16].replace('T', ' ') }}.{% endif %}</p>
+  </div>
+</div>
+
+{% if import_message %}<div class="panel" style="background:var(--green-bg); color:var(--green-fg);">{{ import_message }}</div>{% endif %}
+{% if import_error %}<div class="panel" style="background:var(--red-bg); color:var(--red-fg);">Import failed: {{ import_error }}</div>{% endif %}
+
+<div class="panel">
+  <form class="filters-form" method="get" style="margin-bottom:16px;">
+    <label style="flex:1;">Search
+      <input type="text" name="q" value="{{ q }}" placeholder="Search by name or category&hellip;" style="width:100%;">
+    </label>
+    <button class="btn btn-primary" type="submit">Search</button>
+    {% if q %}<a class="btn btn-outline" href="/admin/catalog">Clear</a>{% endif %}
+  </form>
+
+  <div class="panel-head"><h2>Menu items ({{ items|length }})</h2></div>
+  <table>
+    <tr><th>Name</th><th>Category</th><th>Price</th><th>Status</th><th>Source</th><th></th></tr>
+    {% for item in items %}
+    <tr>
+      <td>{{ item.name }}</td>
+      <td>{{ item.category or "-" }}</td>
+      <td>{{ currency }} {{ "%.2f"|format(item.price) }}</td>
+      <td>{% if item.in_stock %}<span class="badge badge-green">In stock</span>{% else %}<span class="badge badge-red">Out of stock</span>{% endif %}</td>
+      <td class="muted">{{ item.source }}</td>
+      <td>
+        <form method="post" action="/admin/catalog/{{ item.id }}/toggle-stock">
+          <input type="hidden" name="q" value="{{ q }}">
+          <button class="btn btn-outline" type="submit">{{ "Mark out of stock" if item.in_stock else "Mark in stock" }}</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="muted">{% if q %}No menu items match "{{ q }}".{% else %}No menu items yet - upload a menu file below.{% endif %}</td></tr>
+    {% endfor %}
+  </table>
+
+  <form class="upload-row" method="post" action="/admin/catalog/import" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".xlsx,.xls,.csv" required>
+    <button class="btn btn-primary" type="submit">Upload menu file</button>
+    <span class="muted">Columns: SKU, Name, Category, Unit, Price, Stock Qty</span>
+  </form>
+</div>
+
+{% endblock %}

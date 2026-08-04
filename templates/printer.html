@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Printer</h1>
+    <p>Connection settings for the thermal receipt printer at the store.</p>
+  </div>
+</div>
+
+{% if message %}<div class="panel" style="background:var(--green-bg); color:var(--green-fg);">{{ message }}</div>{% endif %}
+{% if error %}<div class="panel" style="background:var(--red-bg); color:var(--red-fg);">{{ error }}</div>{% endif %}
+
+<div class="grid-2">
+  <div class="panel">
+    <h2>Connection</h2>
+    <form method="post" action="/admin/printer" class="form-grid">
+      <label class="full">Connection type
+        <select name="connection_type">
+          <option value="network" {{ 'selected' if not settings or settings.connection_type == 'network' }}>Network (WiFi/Ethernet, has an IP)</option>
+          <option value="bluetooth" {{ 'selected' if settings and settings.connection_type == 'bluetooth' }}>Bluetooth (paired, shows up as a COM/serial port)</option>
+          <option value="usb" {{ 'selected' if settings and settings.connection_type == 'usb' }}>USB (wired, shows up as a COM/serial port)</option>
+        </select>
+      </label>
+      <label class="full">Printer IP address <span class="muted">(network printers only)</span>
+        <input type="text" name="printer_ip" placeholder="192.168.1.50" value="{{ settings.printer_ip if settings else '' }}">
+      </label>
+      <label class="full">COM port / device path <span class="muted">(Bluetooth or USB printers only)</span>
+        <input type="text" name="printer_port" placeholder="COM5 or /dev/rfcomm0" value="{{ settings.printer_port if settings else '' }}">
+      </label>
+      <div class="full"><button class="btn btn-primary" type="submit">Save printer settings</button></div>
+    </form>
+    {% if settings and settings.updated_at %}
+    <p class="muted" style="margin-top:12px;">Last updated: {{ settings.updated_at[:16].replace('T', ' ') }}</p>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <h2>How this works</h2>
+    <p class="muted">Confirmed WhatsApp orders are printed by a small script (<code>print_agent/agent.py</code>) that runs on a PC at the store, on the same network (or Bluetooth range) as the printer. That script fetches these settings automatically - once saved here, it needs the printer plugged in / paired and left running, no further configuration needed on its end unless you want to override these settings locally with command-line flags.</p>
+    <p class="muted">See the README's "Thermal printer integration" section for one-time setup steps (finding the printer's IP, or pairing it over Bluetooth/USB and finding its COM port).</p>
+  </div>
+</div>
+
+{% endblock %}

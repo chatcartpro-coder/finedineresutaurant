@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Sales Analytics</h1>
+    <p>Revenue and order activity, by day, month, or a custom range.</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-outline" href="/admin/analytics/export?start={{ start }}&end={{ end }}">Export to Excel</a>
+  </div>
+</div>
+
+<div class="panel">
+  <form class="filters-form" method="get">
+    <label>From <input type="date" name="start" value="{{ start }}"></label>
+    <label>To <input type="date" name="end" value="{{ end }}"></label>
+    <button class="btn btn-outline" type="submit" name="preset" value="today">Today</button>
+    <button class="btn btn-outline" type="submit" name="preset" value="7d">Last 7 days</button>
+    <button class="btn btn-outline" type="submit" name="preset" value="month">This month</button>
+    <button class="btn btn-primary" type="submit">Apply custom range</button>
+  </form>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card dark">
+    <div class="top">Revenue</div>
+    <div class="value">{{ currency }} {{ "%.2f"|format(stats.revenue) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="top">Orders Confirmed</div>
+    <div class="value">{{ stats.orders_confirmed }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="top">Messages Received</div>
+    <div class="value">{{ stats.messages_received }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="top">Unique Customers</div>
+    <div class="value">{{ stats.unique_customers }}</div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Daily activity</h2>
+  <canvas id="dailyChart" height="90"></canvas>
+</div>
+
+<div class="panel">
+  <h2>Orders in range ({{ orders|length }})</h2>
+  <table>
+    <tr><th>ID</th><th>Phone</th><th>Status</th><th>Total</th><th>Placed</th></tr>
+    {% set b = {"draft": "badge-grey", "awaiting_confirmation": "badge-amber", "confirmed": "badge-green", "cancelled": "badge-red", "fulfilled": "badge-blue"} %}
+    {% for o in orders %}
+    <tr>
+      <td>#{{ o.id }}</td>
+      <td>{{ o.phone }}</td>
+      <td><span class="badge {{ b.get(o.status, 'badge-grey') }}">{{ o.status }}</span></td>
+      <td>{{ currency }} {{ "%.2f"|format(o.total) }}</td>
+      <td>{{ (o.created_at or "")[:16].replace('T', ' ') }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="muted">No orders in this range</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/vendor/chart.umd.min.js"></script>
+<script>
+const daily = {{ daily | tojson }};
+new Chart(document.getElementById('dailyChart'), {
+  type: 'line',
+  data: {
+    labels: daily.map(d => d.day),
+    datasets: [
+      { label: 'Received', data: daily.map(d => d.received), borderColor: '#0a0a0a', backgroundColor: 'rgba(10,10,10,0.08)', tension: 0.3 },
+      { label: 'Sent', data: daily.map(d => d.sent), borderColor: '#a6d600', backgroundColor: 'rgba(204,255,0,0.15)', tension: 0.3 },
+    ]
+  },
+  options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+});
+</script>
+{% endblock %}

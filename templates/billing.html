@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Billing</h1>
+    <p>Your current plan and usage.</p>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <h2>Current plan</h2>
+    <div class="stat-card dark" style="margin-bottom:16px;">
+      <div class="top">Plan</div>
+      <div class="value">Free</div>
+      <div class="delta">No charges - this WhatsApp AI agent is currently free to run.</div>
+    </div>
+    <p class="muted">Included: 1 WhatsApp number, unlimited catalog items, order capture, customer conversations, sales analytics, and this admin dashboard.</p>
+    <button class="btn btn-primary" disabled>Upgrade (coming soon)</button>
+  </div>
+
+  <div class="panel">
+    <h2>Usage this month</h2>
+    <table>
+      <tr><th>Metric</th><th>Value</th></tr>
+      <tr><td>Messages received</td><td>{{ stats_month.messages_received if stats_month else "-" }}</td></tr>
+      <tr><td>Orders confirmed</td><td>{{ stats_month.orders_confirmed if stats_month else "-" }}</td></tr>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

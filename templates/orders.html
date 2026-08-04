@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Orders</h1>
+    <p>All customer orders placed via WhatsApp.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <form class="filters-form" method="get">
+    <label>From <input type="date" name="start" value="{{ start }}"></label>
+    <label>To <input type="date" name="end" value="{{ end }}"></label>
+    <label>Status
+      <select name="status">
+        <option value="" {{ 'selected' if not status }}>All</option>
+        {% for s in ["draft", "awaiting_confirmation", "confirmed", "packed", "picked_up", "delivered", "cancelled"] %}
+        <option value="{{ s }}" {{ 'selected' if status == s }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button class="btn btn-primary" type="submit">Apply</button>
+  </form>
+</div>
+
+{% set b = {"draft": "badge-grey", "awaiting_confirmation": "badge-amber", "confirmed": "badge-green", "packed": "badge-blue", "picked_up": "badge-blue", "delivered": "badge-green", "cancelled": "badge-red"} %}
+
+<div class="panel">
+  <h2>Orders ({{ orders_with_items|length }})</h2>
+  <table>
+    <tr><th>ID</th><th>Phone</th><th>Status</th><th>Items</th><th>Type</th><th>Delivery Agent</th><th>Subtotal</th><th>Delivery</th><th>Total</th><th>Location</th><th>Placed</th></tr>
+    {% for o, items in orders_with_items %}
+    <tr>
+      <td>#{{ o.id }}</td>
+      <td>{{ o.phone }}</td>
+      <td><span class="badge {{ b.get(o.status, 'badge-grey') }}">{{ o.status }}</span></td>
+      <td>
+        {% for it in items %}
+          {{ "%g"|format(it.qty) }}&times; {{ it.item_name_snapshot }}{{ ", " if not loop.last }}
+        {% else %}<span class="muted">-</span>{% endfor %}
+      </td>
+      <td>{% if o.is_pickup %}<span class="badge badge-grey">Pickup</span>{% else %}<span class="badge badge-blue">Delivery</span>{% endif %}</td>
+      <td>{{ o.delivery_agent_phone or "-" }}</td>
+      <td>{{ currency }} {{ "%.2f"|format(o.subtotal) }}</td>
+      <td>{{ currency }} {{ "%.2f"|format(o.delivery_fee) }}</td>
+      <td><b>{{ currency }} {{ "%.2f"|format(o.total) }}</b>{% if o.discount_applied %} <span class="badge badge-green">offer applied</span>{% endif %}</td>
+      <td>
+        {% if o.delivery_lat is not none %}
+        <a href="https://maps.google.com/?q={{ o.delivery_lat }},{{ o.delivery_lng }}" target="_blank">Map</a>
+        {% else %}<span class="muted">-</span>{% endif %}
+      </td>
+      <td>{{ (o.created_at or "")[:16].replace('T', ' ') }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="11" class="muted">No orders in this range</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock %}

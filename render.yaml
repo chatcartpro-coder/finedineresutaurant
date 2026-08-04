@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: finedine-whatsapp-agent
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: WHATSAPP_ACCESS_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_BUSINESS_ACCOUNT_ID
+        sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        sync: false
+      - key: WHATSAPP_API_VERSION
+        value: v20.0
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: google/gemma-4-26b-a4b-it:free
+      - key: OPENROUTER_VISION_MODEL
+        sync: false
+      - key: WHISPER_API_KEY
+        sync: false
+      - key: WHISPER_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: WHISPER_MODEL
+        value: whisper-large-v3
+      - key: ADMIN_SESSION_SECRET
+        generateValue: true
+      - key: PRINT_AGENT_TOKEN
+        generateValue: true
+      - key: STORE_NAME
+        value: Fine Dine Family Restaurant
+      - key: STORE_PHONE
+        sync: false
+      - key: DELIVERY_FEE
+        value: "5"
+      - key: FREE_DELIVERY_THRESHOLD
+        value: "50"
+      - key: CURRENCY
+        value: AED

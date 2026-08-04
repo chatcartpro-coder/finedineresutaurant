@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Conversations</h1>
+    <p>Browse full WhatsApp transcripts per customer.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <form class="filters-form" method="get">
+    <input type="hidden" name="phone" value="{{ phone }}">
+    <label>From <input type="date" name="start" value="{{ start }}"></label>
+    <label>To <input type="date" name="end" value="{{ end }}"></label>
+    <button class="btn btn-primary" type="submit">Apply</button>
+  </form>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <h2>Customers ({{ customers|length }})</h2>
+    <table>
+      <tr><th>Phone</th><th>Name</th><th>Msgs</th><th>Last active</th></tr>
+      {% for c in customers %}
+      <tr class="{{ 'active-row' if c.phone == phone else '' }}">
+        <td><a href="/admin/conversations?phone={{ c.phone }}&start={{ start }}&end={{ end }}">{{ c.phone }}</a></td>
+        <td>{{ c.name or "-" }}</td>
+        <td>{{ c.message_count }}</td>
+        <td>{{ c.last_message_at[:16].replace('T', ' ') }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="muted">No customers in this range</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <div class="panel">
+    {% if transcript is not none %}
+    <h2>Transcript &middot; {{ phone }}</h2>
+    <div class="chat-window">
+      {% for m in transcript %}
+      <div class="bubble {{ 'in' if m.direction == 'in' else 'out' }}">
+        <div class="bubble-text">{{ m.message }}</div>
+        <div class="bubble-time">{{ m.created_at[:16].replace('T', ' ') }}</div>
+      </div>
+      {% else %}
+      <p class="muted">No messages for this customer in the selected date range.</p>
+      {% endfor %}
+    </div>
+    {% else %}
+    <h2>Transcript</h2>
+    <p class="muted">Select a customer from the list to view their conversation.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% if behavior_stats %}
+<div class="stat-grid">
+  <div class="stat-card dark">
+    <div class="top">Lifetime Spend</div>
+    <div class="value">{{ currency }} {{ "%.2f"|format(behavior_stats.total_spent) }}</div>
+    <div class="delta">{{ behavior_stats.total_orders }} orders placed</div>
+  </div>
+  <div class="stat-card">
+    <div class="top">Average Order Value</div>
+    <div class="value">{{ currency }} {{ "%.2f"|format(behavior_stats.avg_order_value) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="top">Days Since Last Order</div>
+    <div class="value">{{ behavior_stats.days_since_last }}</div>
+  </div>
+</div>
+{% endif %}
+
+{% if favorite_items is not none %}
+<div class="panel">
+  <h2>Favorite items &middot; {{ phone }}</h2>
+  {% if favorite_items %}
+  <table>
+    <tr><th>Item</th><th>Times ordered (qty)</th><th>Total spent</th></tr>
+    {% for it in favorite_items %}
+    <tr>
+      <td>{{ it.name }}</td>
+      <td>{{ "%g"|format(it.total_qty) }}</td>
+      <td>{{ currency }} {{ "%.2f"|format(it.total_spent) }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No confirmed orders yet for this customer.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if order_history_by_month is not none %}
+<div class="panel">
+  <h2>Order history &middot; {{ phone }}</h2>
+  {% if order_history_by_month %}
+  <table>
+    <tr><th>Month</th><th>Orders</th><th>Total spent</th><th></th></tr>
+    {% for m in order_history_by_month %}
+    <tr>
+      <td>{{ m.year_month }}</td>
+      <td>{{ m.order_count }}</td>
+      <td>{{ currency }} {{ "%.2f"|format(m.total_spent) }}</td>
+      <td>
+        <details>
+          <summary class="muted" style="cursor:pointer;">View orders</summary>
+          <table style="margin-top:8px;">
+            <tr><th>ID</th><th>Status</th><th>Total</th><th>Placed</th></tr>
+            {% for o in orders_by_month.get(m.year_month, []) %}
+            <tr>
+              <td>#{{ o.id }}</td>
+              <td>{{ o.status }}</td>
+              <td>{{ currency }} {{ "%.2f"|format(o.total) }}</td>
+              <td>{{ (o.created_at or "")[:16].replace('T', ' ') }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </details>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">This customer has no orders yet.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

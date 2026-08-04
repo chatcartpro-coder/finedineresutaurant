@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{% block title %}ChatCart Pro - {{ store_name }}{% endblock %}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="/static/css/admin.css">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+{% import "partials/icons.html" as icons %}
+<div class="app-shell">
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">C</div>
+      <div class="brand-text">
+        <div class="brand-name">ChatCart Pro</div>
+        <div class="brand-sub">{{ store_name }}</div>
+      </div>
+    </div>
+
+    <div class="section-label">Menu</div>
+    <nav>
+      <a href="/admin" class="{{ 'active' if active_page == 'dashboard' else '' }}"><span class="icon">{{ icons.icon("dashboard") }}</span> Dashboard</a>
+      <a href="/admin/customers" class="{{ 'active' if active_page == 'customers' else '' }}"><span class="icon">{{ icons.icon("customers") }}</span> Customers</a>
+      <a href="/admin/conversations" class="{{ 'active' if active_page == 'conversations' else '' }}"><span class="icon">{{ icons.icon("conversations") }}</span> Conversations</a>
+      <a href="/admin/orders" class="{{ 'active' if active_page == 'orders' else '' }}"><span class="icon">{{ icons.icon("orders") }}</span> Orders</a>
+      <a href="/admin/analytics" class="{{ 'active' if active_page == 'analytics' else '' }}"><span class="icon">{{ icons.icon("analytics") }}</span> Analytics</a>
+      <a href="/admin/reports" class="{{ 'active' if active_page == 'reports' else '' }}"><span class="icon">{{ icons.icon("reports") }}</span> Reports</a>
+      <a href="/admin/catalog" class="{{ 'active' if active_page == 'catalog' else '' }}"><span class="icon">{{ icons.icon("catalog") }}</span> Menu</a>
+      <a href="/admin/offers" class="{{ 'active' if active_page == 'offers' else '' }}"><span class="icon">{{ icons.icon("offers") }}</span> Offers</a>
+      <a href="/admin/delivery-agents" class="{{ 'active' if active_page == 'delivery_agents' else '' }}"><span class="icon">{{ icons.icon("delivery") }}</span> Delivery Agents</a>
+    </nav>
+
+    {# DEMO-ONLY: remove this nav item along with admin/test_chat.py before going live #}
+    <div class="section-label">Demo</div>
+    <nav>
+      <a href="/admin/test-chat" class="{{ 'active' if active_page == 'test_chat' else '' }}"><span class="icon">{{ icons.icon("conversations") }}</span> Test Chat</a>
+    </nav>
+
+    <div class="section-label">General</div>
+    <nav>
+      <a href="/admin/printer" class="{{ 'active' if active_page == 'printer' else '' }}"><span class="icon">{{ icons.icon("printer") }}</span> Printer</a>
+      <a href="/admin/billing" class="{{ 'active' if active_page == 'billing' else '' }}"><span class="icon">{{ icons.icon("billing") }}</span> Billing</a>
+      <a href="/admin/settings" class="{{ 'active' if active_page == 'settings' else '' }}"><span class="icon">{{ icons.icon("settings") }}</span> Settings</a>
+      <a href="/admin/logout"><span class="icon">{{ icons.icon("logout") }}</span> Logout</a>
+    </nav>
+
+    <div class="promo-card">
+      <h4>WhatsApp AI Agent</h4>
+      <p>Live and answering customer orders on WhatsApp.</p>
+      <span class="badge-plan">Free Plan</span>
+    </div>
+
+    <div class="powered-by">AI Powered by <b>Nexsofture Pvt Ltd</b></div>
+  </aside>
+
+  <div class="main-col">
+    <div class="topbar">
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu">{{ icons.icon("menu", 18) }}</button>
+      <div class="search">{{ icons.icon("search", 16) }} Search {{ active_page }}&hellip;</div>
+      <div class="spacer"></div>
+      <div class="who">
+        <div class="avatar">{{ admin.username[:1]|upper }}</div>
+        <div>
+          <div class="name">{{ admin.username }}</div>
+          <div class="role">Admin</div>
+        </div>
+      </div>
+    </div>
+
+    {% block content %}{% endblock %}
+  </div>
+
+</div>
+<script>
+(function () {
+  var sidebar = document.getElementById('sidebar');
+  var backdrop = document.getElementById('sidebarBackdrop');
+  var toggle = document.getElementById('menuToggle');
+  if (!sidebar || !backdrop || !toggle) return;
+  function open() { sidebar.classList.add('open'); backdrop.classList.add('open'); }
+  function close() { sidebar.classList.remove('open'); backdrop.classList.remove('open'); }
+  toggle.addEventListener('click', open);
+  backdrop.addEventListener('click', close);
+})();
+</script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Customers</h1>
+    <p>Everyone who has messaged {{ store_name }} on WhatsApp.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <form class="filters-form" method="get">
+    <label>From <input type="date" name="start" value="{{ start }}"></label>
+    <label>To <input type="date" name="end" value="{{ end }}"></label>
+    <button class="btn btn-primary" type="submit">Apply</button>
+  </form>
+</div>
+
+<div class="panel">
+  <h2>Customers ({{ customers|length }})</h2>
+  <table>
+    <tr><th>Customer</th><th>Phone</th><th>Messages</th><th>Last active</th><th></th></tr>
+    {% for c in customers %}
+    <tr>
+      <td>
+        <div class="avatar-row">
+          <div class="avatar-sm">{{ (c.name or c.phone)[:1]|upper }}</div>
+          {{ c.name or "Unknown" }}
+        </div>
+      </td>
+      <td>{{ c.phone }}</td>
+      <td>{{ c.message_count }}</td>
+      <td>{{ c.last_message_at[:16].replace('T', ' ') }}</td>
+      <td><a class="btn btn-outline" href="/admin/conversations?phone={{ c.phone }}&start={{ start }}&end={{ end }}">View chat</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="muted">No customers in this range</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock %}

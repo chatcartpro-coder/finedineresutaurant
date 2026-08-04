@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% import "partials/icons.html" as icons %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Dashboard</h1>
+    <p>Plan, track, and grow {{ store_name }}'s WhatsApp orders.</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-outline" href="/admin/catalog">Manage Menu</a>
+    <a class="btn btn-primary" href="/admin/offers">+ Create Offer</a>
+  </div>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card dark">
+    <div class="top">Orders Today <span class="arrow">{{ icons.icon("trend-up", 14) }}</span></div>
+    <div class="value">{{ stats_today.orders_confirmed }}</div>
+    <div class="delta">{{ currency }} {{ "%.2f"|format(stats_today.revenue) }} revenue today</div>
+  </div>
+  <div class="stat-card">
+    <div class="top">Orders This Month <span class="arrow">{{ icons.icon("trend-up", 14) }}</span></div>
+    <div class="value">{{ stats_month.orders_confirmed }}</div>
+    <div class="delta">{{ currency }} {{ "%.2f"|format(stats_month.revenue) }} revenue this month</div>
+  </div>
+  <div class="stat-card">
+    <div class="top">Messages Today <span class="arrow">{{ icons.icon("trend-up", 14) }}</span></div>
+    <div class="value">{{ stats_today.messages_received }}</div>
+    <div class="delta">{{ stats_today.replies_sent }} replies sent</div>
+  </div>
+  <div class="stat-card">
+    <div class="top">Active Customers <span class="arrow">{{ icons.icon("trend-up", 14) }}</span></div>
+    <div class="value">{{ stats_month.unique_customers }}</div>
+    <div class="delta">In the last 30 days</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <h2>Order activity (last 7 days)</h2>
+    <canvas id="ordersChart" height="140"></canvas>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h2>Recent orders</h2><a class="muted" href="/admin/orders">View all</a></div>
+    <table>
+      <tr><th>ID</th><th>Phone</th><th>Status</th><th>Total</th></tr>
+      {% for o in recent_orders %}
+      <tr>
+        <td>#{{ o.id }}</td>
+        <td>{{ o.phone }}</td>
+        <td>
+          {% set b = {"draft": "badge-grey", "awaiting_confirmation": "badge-amber", "confirmed": "badge-green", "packed": "badge-blue", "picked_up": "badge-blue", "delivered": "badge-green", "cancelled": "badge-red"} %}
+          <span class="badge {{ b.get(o.status, 'badge-grey') }}">{{ o.status }}</span>
+        </td>
+        <td>{{ currency }} {{ "%.2f"|format(o.total) }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="muted">No orders yet</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/vendor/chart.umd.min.js"></script>
+<script>
+const days = {{ daily | tojson }};
+new Chart(document.getElementById('ordersChart'), {
+  type: 'bar',
+  data: {
+    labels: days.map(d => d.day.slice(5)),
+    datasets: [
+      { label: 'Received', data: days.map(d => d.received), backgroundColor: '#0a0a0a' },
+      { label: 'Sent', data: days.map(d => d.sent), backgroundColor: '#ccff00' },
+    ]
+  },
+  options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+});
+</script>
+{% endblock %}

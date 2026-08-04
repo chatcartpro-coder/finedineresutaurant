@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Offers</h1>
+    <p>Describe a promotion in plain language and let AI draft it.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Create offer with AI</h2>
+  <form class="offer-chat" method="post" action="/admin/offers/draft">
+    <textarea name="prompt" placeholder="e.g. 20% off biryani on weekends">{{ last_prompt or "" }}</textarea>
+    <div><button class="btn btn-primary" type="submit">Draft offer</button></div>
+  </form>
+
+  {% if draft_error %}
+  <div class="login-error">Could not draft an offer: {{ draft_error }}</div>
+  {% endif %}
+
+  {% if draft %}
+  <div class="offer-draft" style="margin-top:16px;">
+    <h3>AI-drafted offer &middot; review before activating</h3>
+    <div class="field"><b>Title:</b> {{ draft.title }}</div>
+    <div class="field"><b>Description:</b> {{ draft.description }}</div>
+    <div class="field"><b>Discount:</b> {{ draft.discount_value }}{{ "%" if draft.discount_type == "percent" else " " + currency }}</div>
+    <div class="field"><b>Scope:</b> {{ draft.scope_type }}{% if draft.scope_value %} ({{ draft.scope_value | join(", ") }}){% endif %}</div>
+    <div class="field"><b>Dates:</b> {{ draft.starts_at or "immediately" }} &rarr; {{ draft.ends_at or "no end date" }}</div>
+
+    <form method="post" action="/admin/offers/create" style="margin-top:12px;">
+      <input type="hidden" name="title" value="{{ draft.title }}">
+      <input type="hidden" name="description" value="{{ draft.description }}">
+      <input type="hidden" name="discount_type" value="{{ draft.discount_type }}">
+      <input type="hidden" name="discount_value" value="{{ draft.discount_value }}">
+      <input type="hidden" name="starts_at" value="{{ draft.starts_at or '' }}">
+      <input type="hidden" name="ends_at" value="{{ draft.ends_at or '' }}">
+      <button class="btn btn-primary" type="submit">Save as draft offer</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+<div class="panel">
+  <h2>Create offer manually</h2>
+  <form method="post" action="/admin/offers/create" class="form-grid">
+    <label class="full">Title<input type="text" name="title" required></label>
+    <label class="full">Description<input type="text" name="description"></label>
+    <label>Discount type
+      <select name="discount_type">
+        <option value="percent">Percent (%)</option>
+        <option value="fixed">Fixed amount ({{ currency }})</option>
+      </select>
+    </label>
+    <label>Discount value<input type="number" step="0.01" min="0" name="discount_value" required></label>
+    <label>Start date<input type="date" name="starts_at"></label>
+    <label>End date<input type="date" name="ends_at"></label>
+    <div class="full"><button class="btn btn-primary" type="submit">Create offer</button></div>
+  </form>
+</div>
+
+<div class="panel">
+  <h2>All offers ({{ offers|length }})</h2>
+  <table>
+    <tr><th>Title</th><th>Discount</th><th>Status</th><th>Dates</th><th></th></tr>
+    {% set b = {"draft": "badge-grey", "active": "badge-green", "expired": "badge-red"} %}
+    {% for o in offers %}
+    <tr>
+      <td>{{ o.title }}</td>
+      <td>{{ o.discount_value }}{{ "%" if o.discount_type == "percent" else " " + currency }}</td>
+      <td><span class="badge {{ b.get(o.status, 'badge-grey') }}">{{ o.status }}</span></td>
+      <td>{{ o.starts_at or "-" }} &rarr; {{ o.ends_at or "-" }}</td>
+      <td>
+        {% if o.status != "active" %}
+        <form method="post" action="/admin/offers/{{ o.id }}/activate" style="display:inline;"><button class="btn btn-outline" type="submit">Activate</button></form>
+        {% else %}
+        <form method="post" action="/admin/offers/{{ o.id }}/deactivate" style="display:inline;"><button class="btn btn-outline" type="submit">Deactivate</button></form>
+        {% endif %}
+        <form method="post" action="/admin/offers/{{ o.id }}/delete" style="display:inline;"><button class="btn btn-outline" type="submit">Delete</button></form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="muted">No offers yet</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock %}

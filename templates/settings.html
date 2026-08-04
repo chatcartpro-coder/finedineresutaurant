@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Settings</h1>
+    <p>Account and store configuration.</p>
+  </div>
+</div>
+
+{% if message %}<div class="panel" style="background:var(--green-bg); color:var(--green-fg);">{{ message }}</div>{% endif %}
+{% if error %}<div class="panel" style="background:var(--red-bg); color:var(--red-fg);">{{ error }}</div>{% endif %}
+
+<div class="grid-2">
+  <div class="panel">
+    <h2>Change password</h2>
+    <form method="post" action="/admin/settings/password" class="form-grid">
+      <label class="full">Current password<input type="password" name="current_password" required></label>
+      <label class="full">New password (min 8 characters)<input type="password" name="new_password" required></label>
+      <div class="full"><button class="btn btn-primary" type="submit">Update password</button></div>
+    </form>
+  </div>
+
+  <div class="panel">
+    <h2>Store configuration</h2>
+    <p class="muted">These values are set via environment variables (.env). Edit and redeploy to change them.</p>
+    <table>
+      <tr><td>Store name</td><td class="settings-value">{{ store_name }}</td></tr>
+      <tr><td>Currency</td><td class="settings-value">{{ currency }}</td></tr>
+      <tr><td>Delivery fee</td><td class="settings-value">{{ config.DELIVERY_FEE }}</td></tr>
+      <tr><td>Free delivery threshold</td><td class="settings-value">{{ config.FREE_DELIVERY_THRESHOLD }}</td></tr>
+      <tr><td>Store phone</td><td class="settings-value">{{ config.STORE_PHONE or "-" }}</td></tr>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

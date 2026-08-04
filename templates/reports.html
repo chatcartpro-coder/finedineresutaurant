@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Reports</h1>
+    <p>Pre-built monthly and yearly summaries.</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-outline" href="/admin/reports/export?year={{ year }}&month={{ month }}">Export to Excel</a>
+  </div>
+</div>
+
+<div class="panel">
+  <form class="filters-form" method="get">
+    <label>Year
+      <select name="year">
+        {% for y in available_years %}
+        <option value="{{ y }}" {{ 'selected' if y == year }}>{{ y }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Month
+      <select name="month">
+        {% for m in range(1, 13) %}
+        <option value="{{ "%02d"|format(m) }}" {{ 'selected' if "%02d"|format(m) == month }}>{{ "%02d"|format(m) }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button class="btn btn-primary" type="submit">View</button>
+  </form>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card dark">
+    <div class="top">Revenue ({{ year }}-{{ month }})</div>
+    <div class="value">{{ currency }} {{ "%.2f"|format(monthly_stats.revenue) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="top">Orders Confirmed</div>
+    <div class="value">{{ monthly_stats.orders_confirmed }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="top">Unique Customers</div>
+    <div class="value">{{ monthly_stats.unique_customers }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="top">Messages Received</div>
+    <div class="value">{{ monthly_stats.messages_received }}</div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Top-selling items &middot; {{ year }}-{{ month }}</h2>
+  <table>
+    <tr><th>Item</th><th>Qty sold</th><th>Revenue</th></tr>
+    {% for row in top_items %}
+    <tr>
+      <td>{{ row.name }}</td>
+      <td>{{ "%g"|format(row.total_qty) }}</td>
+      <td>{{ currency }} {{ "%.2f"|format(row.total_revenue) }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="3" class="muted">No sales in this month</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="panel">
+  <h2>Yearly rollup &middot; {{ year }}</h2>
+  <table>
+    <tr><th>Month</th><th>Orders</th><th>Revenue</th><th>Unique customers</th></tr>
+    {% for row in yearly_rollup %}
+    <tr>
+      <td>{{ row.year_month }}</td>
+      <td>{{ row.order_count }}</td>
+      <td>{{ currency }} {{ "%.2f"|format(row.total_revenue) }}</td>
+      <td>{{ row.unique_customers }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="muted">No orders this year</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Delivery Agents</h1>
+    <p>Registered riders who receive delivery orders and update status over WhatsApp.</p>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <h2>Add a delivery agent</h2>
+    <form method="post" action="/admin/delivery-agents" class="form-grid">
+      <label class="full">Name<input type="text" name="name" required></label>
+      <label class="full">WhatsApp phone number<input type="text" name="phone" placeholder="9715XXXXXXXX" required></label>
+      <div class="full"><button class="btn btn-primary" type="submit">Add agent</button></div>
+    </form>
+  </div>
+
+  <div class="panel">
+    <h2>How it works</h2>
+    <p class="muted">When a customer confirms a delivery order, the system automatically messages an active agent with the order details (items, total, customer phone, delivery address/map link). The agent replies:</p>
+    <ul class="muted" style="margin:8px 0 0; padding-left:20px;">
+      <li><b>PACKED</b> once the kitchen has it ready</li>
+      <li><b>PICKED</b> once they've collected it</li>
+      <li><b>DELIVERED</b> once it's dropped off</li>
+    </ul>
+    <p class="muted">Each reply updates the order's status here and can notify the customer.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Registered agents ({{ agents|length }})</h2>
+  <table>
+    <tr><th>Name</th><th>Phone</th><th>Status</th><th></th></tr>
+    {% for a in agents %}
+    <tr>
+      <td>{{ a.name or "-" }}</td>
+      <td>{{ a.phone }}</td>
+      <td>{% if a.active %}<span class="badge badge-green">Active</span>{% else %}<span class="badge badge-grey">Inactive</span>{% endif %}</td>
+      <td>
+        {% if a.active %}
+        <form method="post" action="/admin/delivery-agents/{{ a.id }}/deactivate"><button class="btn btn-outline" type="submit">Deactivate</button></form>
+        {% else %}
+        <form method="post" action="/admin/delivery-agents/{{ a.id }}/activate"><button class="btn btn-outline" type="submit">Activate</button></form>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="muted">No delivery agents registered yet</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock %}
